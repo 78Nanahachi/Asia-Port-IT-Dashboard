@@ -3,154 +3,259 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asia-Port-IT-Dashboard</title>
+<title>Port-IT Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
-  /* 背景色を確実に適用 */
-  html, body {
-    background-color: #0f172a !important; 
-    color: #f8fafc;
+  :root {
+    --bg: #030712;
+    --card: #111827;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.3);
+    --text: #f3f4f6;
+    --text-dim: #9ca3af;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', 'Noto Sans JP', sans-serif;
     margin: 0;
-    padding: 0;
-    font-family: sans-serif;
+    line-height: 1.6;
   }
-  header { background: #1e293b; padding: 20px; border-bottom: 1px solid #475569; }
-  .debug-info {
-    background: #450a0a;
-    color: #fecaca;
-    padding: 15px;
-    margin: 20px;
-    border: 1px solid #dc2626;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 12px;
-    display: none; /* エラー時のみ表示 */
+
+  /* 創造的演出：ヘッダーのグレードアップ */
+  header {
+    height: 300px;
+    background: radial-gradient(circle at top right, #1e40af, transparent), linear-gradient(to bottom, #030712, #111827);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 5%;
+    border-bottom: 1px solid var(--border);
   }
-  .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-  .kpi-card { background: #1e293b; padding: 20px; border-radius: 10px; border-top: 4px solid #38bdf8; }
-  #map { height: 400px; border-radius: 10px; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; background: #1e293b; font-size: 12px; }
-  th, td { padding: 10px; border: 1px solid #334155; text-align: left; }
-  th { background: #334155; }
+
+  .header-content h1 {
+    font-size: 3rem;
+    margin: 0;
+    letter-spacing: -1px;
+    background: linear-gradient(to right, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ニュース要約セクション（ここが知性） */
+  .insight-bar {
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: -50px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .insight-tag {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* メイングリッド */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    padding: 40px 5%;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+
+  /* ニュースカード形式のリスト */
+  .news-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .news-meta { font-size: 0.75rem; color: var(--accent); display: flex; gap: 15px; }
+  .news-title { font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+  .news-title:hover { color: var(--accent); }
+
+  #map { height: 500px; border-radius: 12px; border: 1px solid var(--border); }
+
+  /* ローディングアニメーション */
+  .loader { text-align: center; padding: 50px; color: var(--accent); font-weight: bold; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Asia-Port-IT-Dashboard</h1>
-  <div id="status">システム起動中...</div>
+  <div class="header-content">
+    <div style="color: var(--accent); font-weight: bold; margin-bottom: 10px;">GLOBAL PORT TECHNOLOGY MONITOR</div>
+    <h1>Asia Port IT Intelligence</h1>
+    <p style="color: var(--text-dim); max-width: 600px;">
+      港湾のDX、自動化、脱炭素化の最前線をデータで解読。単なるニュースを戦略的なインサイトへ。
+    </p>
+  </div>
 </header>
 
-<div id="debugBox" class="debug-info"></div>
-
-<div class="container">
-  <div class="kpi-grid">
-    <div class="kpi-card"><div>ニュース総数</div><div id="count" style="font-size:30px;">--</div></div>
-    <div id="catBox" class="kpi-card"><div>最新ニュース</div><div id="latest" style="font-size:14px; margin-top:10px;">--</div></div>
-  </div>
-
-  <div id="map"></div>
-
-  <div style="background:#1e293b; padding:15px; border-radius:10px; overflow-x:auto;">
-    <h3>📊 最新データ一覧</h3>
-    <table id="dataTable">
-      <thead>
-        <tr><th>日付</th><th>場所</th><th>タイトル</th><th>リンク</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<div style="padding: 0 5%;">
+  <div class="insight-bar">
+    <span class="insight-tag">TODAY'S PULSE</span>
+    <div id="summaryText">最新ニュースを分析中...</div>
   </div>
 </div>
 
+<main class="dashboard-grid">
+  <section class="main-content">
+    <div class="card" style="margin-bottom: 24px;">
+      <h3 style="margin-top:0;">📊 Tech Heatmap</h3>
+      <div style="height: 300px;">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">📋 Intelligence Feed</h3>
+      <div id="newsFeed" class="loader">Fetching data...</div>
+    </div>
+  </section>
+
+  <aside class="side-content">
+    <div class="card" style="margin-bottom: 24px;">
+      <h3 style="margin-top:0;">🌐 Global Map</h3>
+      <div id="map"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">💡 Strategic Hints</h3>
+      <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-dim);" id="hintsList">
+        <li>データ読み込み後にヒントを生成します</li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
 <script>
-// --- 設定項目 ---
 const SPREADSHEET_ID = '1jGre5314DttRSk2_xXVlFc0XxgroxKJMOVonhSTaLu0';
-// シート名が「LIST」でない場合、ここを「シート1」や「Sheet1」に変えてみてください
-const SHEET_NAME = 'LIST'; 
 
-const debugBox = document.getElementById('debugBox');
-const status = document.getElementById('status');
-
-function showError(msg) {
-  debugBox.style.display = 'block';
-  debugBox.innerHTML += `<div>⚠️ ${msg}</div>`;
-  status.textContent = "エラーが発生しました";
+async function fetchData() {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const json = JSON.parse(text.substring(text.indexOf("(") + 1, text.lastIndexOf(")")));
+  return json.table.rows.map(r => ({
+    date: r.c[0]?.f || r.c[0]?.v,
+    location: r.c[1]?.v,
+    lat: parseFloat(r.c[2]?.v),
+    lng: parseFloat(r.c[3]?.v),
+    title: r.c[4]?.v,
+    summary: r.c[5]?.v,
+    category: r.c[6]?.v,
+    link: r.c[7]?.v
+  }));
 }
 
-async function start() {
+async function init() {
   try {
-    status.textContent = "データ取得中...";
-    
-    // スプレッドシート取得用URL
-    // SHEET_NAMEを使わず、一番左のタブ（gid=0）を直接指定する方式に変更
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
-    
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Googleへの接続に失敗しました");
-    
-    const text = await response.text();
-    // Googleの特殊なJSON形式を解析
-    const jsonData = JSON.parse(text.substring(text.indexOf("(") + 1, text.lastIndexOf(")")));
-    
-    const rows = jsonData.table.rows;
-    const cols = jsonData.table.cols.map(c => c.label);
-    
-    if (!rows || rows.length === 0) {
-      showError("スプレッドシートの中にデータが見つかりません。");
-      return;
-    }
-
-    status.textContent = "データ処理中...";
-    document.getElementById('count').textContent = rows.length + " 件";
-
-    const tbody = document.querySelector('#dataTable tbody');
-    
-    // データのマッピングと表示
-    rows.forEach((row, index) => {
-      const d = row.c;
-      // 列の順番を想定: 0:日付, 1:場所, 2:緯度, 3:経度, 4:タイトル, 5:要約, 6:カテゴリ, 7:LINK
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${d[0] ? d[0].f || d[0].v : ''}</td>
-        <td>${d[1] ? d[1].v : ''}</td>
-        <td>${d[4] ? d[4].v : ''}</td>
-        <td><a href="${d[7] ? d[7].v : '#'}" target="_blank" style="color:#38bdf8">Link</a></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // 最新ニュースのタイトルを表示
-    if(rows[0] && rows[0].c[4]) {
-      document.getElementById('latest').textContent = rows[0].c[4].v;
-    }
-
-    // 地図の初期化
-    const map = L.map('map').setView([20, 120], 3);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-    rows.forEach(row => {
-      const d = row.c;
-      const lat = d[2] ? parseFloat(d[2].v) : null;
-      const lng = d[3] ? parseFloat(d[3].v) : null;
-      if (lat && lng) {
-        L.marker([lat, lng]).addTo(map).bindPopup(d[4] ? d[4].v : "Port IT News");
-      }
-    });
-
-    status.textContent = "更新完了: " + new Date().toLocaleTimeString();
-
+    const data = await fetchData();
+    renderFeed(data);
+    renderAnalysis(data);
+    renderMap(data);
+    renderChart(data);
   } catch (err) {
-    showError(err.message);
     console.error(err);
   }
 }
 
-// 実行
-start();
+function renderFeed(data) {
+  const container = document.getElementById('newsFeed');
+  container.innerHTML = '';
+  data.slice(0, 10).forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'news-item';
+    div.innerHTML = `
+      <div class="news-meta"><span>${item.date}</span><span>${item.location}</span><span>#${item.category}</span></div>
+      <div class="news-title" onclick="window.open('${item.link}')">${item.title}</div>
+      <div style="font-size: 0.85rem; color: var(--text-dim);">${item.summary ? item.summary.substring(0, 120) + '...' : ''}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderAnalysis(data) {
+  // ここで「創造的」なデータ解釈を行う
+  const categories = data.map(d => d.category);
+  const mostCommon = categories.sort((a,b) => 
+    categories.filter(v => v===a).length - categories.filter(v => v===b).length
+  ).pop();
+  
+  document.getElementById('summaryText').textContent = 
+    `現在、港湾ITは「${mostCommon}」に関する動きが最も活発です。${data.length}件の最新プロジェクトから、デジタルトランスフォーメーションの加速が確認できます。`;
+
+  const hints = [
+    `注目の技術：${mostCommon}への投資が集中しています。`,
+    `地域トレンド：${data[0].location}周辺での新規プロジェクトが目立ちます。`,
+    "今後の予測：自動化と脱炭素の統合ソリューションが鍵となります。"
+  ];
+  const hintsList = document.getElementById('hintsList');
+  hintsList.innerHTML = hints.map(h => `<li style="margin-bottom:10px;">${h}</li>`).join('');
+}
+
+function renderMap(data) {
+  const map = L.map('map', { zoomControl: false }).setView([20, 120], 3);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+  data.forEach(d => {
+    if (d.lat && d.lng) {
+      L.circleMarker([d.lat, d.lng], { radius: 6, color: '#38bdf8', fillOpacity: 0.8 }).addTo(map)
+        .bindPopup(`<b>${d.title}</b>`);
+    }
+  });
+}
+
+function renderChart(data) {
+  const counts = {};
+  data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{ label: 'ニュース件数', data: Object.values(counts), backgroundColor: '#38bdf8' }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: '#333' }, ticks: { color: '#999' } },
+        x: { grid: { display: false }, ticks: { color: '#999' } }
+      }
+    }
+  });
+}
+
+init();
 </script>
 </body>
 </html>
