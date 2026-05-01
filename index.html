@@ -3,34 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Port-IT Intelligence Dashboard</title>
+<title>Asia Port IT Intelligence Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
 <style>
   :root {
-    --bg: #030712;
-    --card: #111827;
-    --accent: #38bdf8;
-    --accent-glow: rgba(56, 189, 248, 0.3);
-    --text: #f3f4f6;
-    --text-dim: #9ca3af;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
     --border: rgba(255,255,255,0.08);
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #2dd4bf;
+    --accent-glow: rgba(56, 189, 248, 0.3);
   }
-
-  body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Outfit', 'Noto Sans JP', sans-serif;
-    margin: 0;
-    line-height: 1.6;
-  }
-
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Outfit', 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 50px; line-height: 1.6; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 2.5rem; letter-spacing: -1px; }
+  .header-desc { font-size: 0.9rem; color: var(--text-muted); max-width: 600px; margin-top: 5px; }
+  
   /* 創造的演出：ヘッダーのグレードアップ */
-  header {
-    height: 300px;
+  .header-container {
+    height: 250px;
     background: radial-gradient(circle at top right, #1e40af, transparent), linear-gradient(to bottom, #030712, #111827);
     display: flex;
     flex-direction: column;
@@ -39,28 +37,19 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .header-content h1 {
-    font-size: 3rem;
-    margin: 0;
-    letter-spacing: -1px;
-    background: linear-gradient(to right, #fff, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  /* ニュース要約セクション（ここが知性） */
+  /* インサイトバー（ここが知性） */
   .insight-bar {
     background: var(--accent-glow);
     border: 1px solid var(--accent);
     padding: 20px;
     border-radius: 12px;
-    margin-top: -50px;
+    margin: -30px auto 24px; /* ヘッダーに少し重ねる */
     backdrop-filter: blur(10px);
     display: flex;
     gap: 20px;
     align-items: center;
+    max-width: 90%;
   }
-
   .insight-tag {
     background: var(--accent);
     color: var(--bg);
@@ -70,55 +59,67 @@
     font-size: 0.8rem;
     white-space: nowrap;
   }
+  #summaryText { font-weight: bold; color: var(--text); font-size: 1rem; }
 
   /* メイングリッド */
   .dashboard-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 24px;
-    padding: 40px 5%;
+    padding: 0 5% 40px;
   }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    transition: transform 0.3s ease;
-  }
-
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: transform 0.3s ease; }
   .card:hover { transform: translateY(-5px); border-color: var(--accent); }
-
-  /* ニュースカード形式のリスト */
+  .card h3 { margin-bottom: 15px; color: var(--text); font-size: 1.25rem; font-weight: 700; }
+  
+  /* Intelligence Feed (マガジン形式) */
   .news-item {
-    padding: 16px 0;
+    padding: 20px 0;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-meta { font-size: 0.75rem; color: var(--accent); display: flex; gap: 15px; font-weight: 500; }
+  .news-title { font-size: 1.25rem; font-weight: bold; cursor: pointer; color: var(--text); text-decoration: none; transition: color 0.2s; }
+  .news-title:hover { color: var(--accent); }
+  .news-summary {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2行に制限 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.7;
   }
 
-  .news-meta { font-size: 0.75rem; color: var(--accent); display: flex; gap: 15px; }
-  .news-title { font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-  .news-title:hover { color: var(--accent); }
+  /* マップ・ヒートマップ */
+  #map { height: 400px; border-radius: 12px; border: 1px solid var(--border); }
+  #categoryChart { height: 300px; }
 
-  #map { height: 500px; border-radius: 12px; border: 1px solid var(--border); }
+  /* 戦略的ヒント */
+  #hintsList { padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); }
+  #hintsList li { margin-bottom: 12px; }
 
-  /* ローディングアニメーション */
-  .loader { text-align: center; padding: 50px; color: var(--accent); font-weight: bold; }
+  .error-msg { background: #ef4444; color: white; padding: 20px; margin: 32px; border-radius: 8px; display: none; }
+  .loader { text-align: center; padding: 50px; color: var(--accent); font-weight: bold; font-size: 1.1rem; }
+  @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } .insight-bar { flex-direction: column; text-align: center; } }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-content">
-    <div style="color: var(--accent); font-weight: bold; margin-bottom: 10px;">GLOBAL PORT TECHNOLOGY MONITOR</div>
-    <h1>Asia Port IT Intelligence</h1>
-    <p style="color: var(--text-dim); max-width: 600px;">
-      港湾のDX、自動化、脱炭素化の最前線をデータで解読。単なるニュースを戦略的なインサイトへ。
-    </p>
-  </div>
-</header>
+<div class="header-container">
+  <div style="color: var(--accent); font-weight: bold; margin-bottom: 5px;">GLOBAL PORT TECHNOLOGY MONITOR</div>
+  <h1>Asia Port IT Intelligence</h1>
+  <p class="header-desc">
+    港湾のDX、自動化、脱炭素化の最前線をデータで解読。単なるニュースを、あなたの戦略を導く知性へ。
+  </p>
+  <div id="status" style="font-size: 12px; color: var(--accent2); margin-top: 10px;">システム起動中...</div>
+</div>
+
+<div id="errorMessage" class="error-msg"></div>
 
 <div style="padding: 0 5%;">
   <div class="insight-bar">
@@ -130,27 +131,27 @@
 <main class="dashboard-grid">
   <section class="main-content">
     <div class="card" style="margin-bottom: 24px;">
-      <h3 style="margin-top:0;">📊 Tech Heatmap</h3>
-      <div style="height: 300px;">
+      <h3>📊 Tech Heatmap</h3>
+      <div style="height: 300px; position: relative;">
         <canvas id="categoryChart"></canvas>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin-top:0;">📋 Intelligence Feed</h3>
-      <div id="newsFeed" class="loader">Fetching data...</div>
+      <h3>📋 Intelligence Feed</h3>
+      <div id="newsFeed" class="loader">Fetching and analyzing data...</div>
     </div>
   </section>
 
   <aside class="side-content">
     <div class="card" style="margin-bottom: 24px;">
-      <h3 style="margin-top:0;">🌐 Global Map</h3>
+      <h3>🌐 Global Map</h3>
       <div id="map"></div>
     </div>
 
     <div class="card">
-      <h3 style="margin-top:0;">💡 Strategic Hints</h3>
-      <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-dim);" id="hintsList">
+      <h3>💡 Strategic Hints</h3>
+      <ul id="hintsList">
         <li>データ読み込み後にヒントを生成します</li>
       </ul>
     </div>
@@ -158,104 +159,228 @@
 </main>
 
 <script>
+// 重要：スプレッドシートID
 const SPREADSHEET_ID = '1jGre5314DttRSk2_xXVlFc0XxgroxKJMOVonhSTaLu0';
+const SHEET_NAME = 'LIST'; 
 
-async function fetchData() {
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const json = JSON.parse(text.substring(text.indexOf("(") + 1, text.lastIndexOf(")")));
-  return json.table.rows.map(r => ({
-    date: r.c[0]?.f || r.c[0]?.v,
-    location: r.c[1]?.v,
-    lat: parseFloat(r.c[2]?.v),
-    lng: parseFloat(r.c[3]?.v),
-    title: r.c[4]?.v,
-    summary: r.c[5]?.v,
-    category: r.c[6]?.v,
-    link: r.c[7]?.v
-  }));
+// Google Sheetsの日付形式 (Date(yyyy, m, d, h, m, s)) をJavaScriptのDateにパースする
+function parseGoogleDate(dateString) {
+  if (typeof dateString !== 'string') return dateString;
+  const match = dateString.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
+  if (match) {
+    const [, year, month, day, hour, minute, second] = match.map(Number);
+    // Google Sheetsの月は0から始まる (1月は0)
+    return new Date(year, month, day, hour, minute, second);
+  }
+  return dateString;
+}
+
+// 日付オブジェクトをyyyy/mm/dd形式にフォーマットする
+function formatDate(date) {
+  if (!(date instanceof Date) || isNaN(date)) return date;
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd}`;
+}
+
+async function loadData() {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    // JSONPの枠を外す処理
+    const json = JSON.parse(text.replace(/^[^(]+[(]/, '').replace(/[)];?$/, ''));
+    
+    // 列名がある場合は使用し、ない場合は列番号を使用する
+    const cols = json.table.cols.map((c, i) => c.label || `col_${i}`);
+    
+    const rows = json.table.rows.map(row => {
+      let obj = {};
+      row.c.forEach((cell, i) => {
+        const key = cols[i];
+        if (cell) {
+          // 生のGoogle Sheets形式のデータがある場合はパースする
+          const value = parseGoogleDate(cell.v);
+          if (key === 'col_0' || key === '配信日') {
+             obj[key] = formatDate(value); // 日付のみフォーマット
+          } else if (key === 'col_2' || key === '緯度' || key === 'col_3' || key === '経度') {
+             obj[key] = (typeof value === 'number') ? value : parseFloat(value);
+          } else {
+             obj[key] = value || cell.f || '';
+          }
+        } else {
+          obj[key] = '';
+        }
+      });
+      return obj;
+    });
+    return rows;
+  } catch (e) {
+    throw new Error("スプレッドシートの読み込みに失敗しました。共有設定を確認してください。");
+  }
+}
+
+// ユーザーのスプレッドシートの列名に合わせてデータをマッピングする関数
+// 列A: 配信日, 列B: 場所, 列C: 緯度, 列D: 経度, 列E: タイトル, 列F: 要約, 列G: カテゴリ, 列H: LINK
+function mapDataToFields(rawItem) {
+  return {
+    date: rawItem['配信日'] || rawItem['col_0'],
+    location: rawItem['場所'] || rawItem['col_1'],
+    lat: rawItem['緯度'] || rawItem['col_2'],
+    lng: rawItem['経度'] || rawItem['col_3'],
+    title: rawItem['タイトル'] || rawItem['col_4'],
+    summary: rawItem['要約'] || rawItem['col_5'],
+    category: rawItem['カテゴリ'] || rawItem['col_6'],
+    link: rawItem['LINK'] || rawItem['col_7']
+  };
 }
 
 async function init() {
+  const errorEl = document.getElementById('errorMessage');
+  const statusEl = document.getElementById('status');
+
   try {
-    const data = await fetchData();
-    renderFeed(data);
+    const data = await loadData();
+    if (!data || data.length === 0) throw new Error("データが見つかりません。");
+
+    // 2. 分析とインサイト生成 (これが知性)
     renderAnalysis(data);
+
+    // 1.KPI・レンダリング
+    renderFeed(data);
     renderMap(data);
     renderChart(data);
-  } catch (err) {
-    console.error(err);
+
+    statusEl.textContent = "Last updated: " + new Date().toLocaleTimeString();
+
+  } catch (e) {
+    statusEl.textContent = "Error";
+    errorEl.style.display = 'block';
+    errorEl.textContent = e.message;
+    console.error(e);
   }
 }
 
 function renderFeed(data) {
   const container = document.getElementById('newsFeed');
+  container.className = ''; // loaderクラスを外す
   container.innerHTML = '';
-  data.slice(0, 10).forEach(item => {
+  // 最新の10件のみ表示
+  data.slice(0, 10).forEach(rawItem => {
+    const item = mapDataToFields(rawItem);
     const div = document.createElement('div');
     div.className = 'news-item';
     div.innerHTML = `
-      <div class="news-meta"><span>${item.date}</span><span>${item.location}</span><span>#${item.category}</span></div>
-      <div class="news-title" onclick="window.open('${item.link}')">${item.title}</div>
-      <div style="font-size: 0.85rem; color: var(--text-dim);">${item.summary ? item.summary.substring(0, 120) + '...' : ''}</div>
+      <div class="news-meta">
+        <span>${item.date || '—'}</span>
+        <span>${item.location || 'Global'}</span>
+        <span>#${item.category || 'Other'}</span>
+      </div>
+      <a class="news-title" href="${item.link}" target="_blank">${item.title || '—'}</a>
+      <div class="news-summary">${item.summary || '—'}</div>
     `;
     container.appendChild(div);
   });
 }
 
 function renderAnalysis(data) {
-  // ここで「創造的」なデータ解釈を行う
-  const categories = data.map(d => d.category);
-  const mostCommon = categories.sort((a,b) => 
-    categories.filter(v => v===a).length - categories.filter(v => v===b).length
-  ).pop();
+  // 正しいカテゴリデータを使用
+  const categories = data.map(rawItem => mapDataToFields(rawItem).category);
   
-  document.getElementById('summaryText').textContent = 
-    `現在、港湾ITは「${mostCommon}」に関する動きが最も活発です。${data.length}件の最新プロジェクトから、デジタルトランスフォーメーションの加速が確認できます。`;
+  if (categories.length === 0) {
+    document.getElementById('summaryText').textContent = '最新ニュースを分析中...';
+    return;
+  }
+  
+  // 最も多いカテゴリを抽出 (データの解釈)
+  const counts = {};
+  let maxCount = 0;
+  let mostCommonCategory = '';
+  
+  categories.forEach(c => {
+    if (c) {
+      counts[c] = (counts[c] || 0) + 1;
+      if (counts[c] > maxCount) {
+        maxCount = counts[c];
+        mostCommonCategory = c;
+      }
+    }
+  });
 
+  // TODAY'S PULSEの生成
+  document.getElementById('summaryText').textContent = 
+    `現在、港湾ITは「${mostCommonCategory || 'IT'}」に関する動きが最も活発です。${data.length}件の最新プロジェクトから、デジタルトランスフォーメーションの加速が確認できます。`;
+
+  // 戦略的ヒントの生成 (創造的ヒント)
+  const latestItem = mapDataToFields(data[0]);
   const hints = [
-    `注目の技術：${mostCommon}への投資が集中しています。`,
-    `地域トレンド：${data[0].location}周辺での新規プロジェクトが目立ちます。`,
-    "今後の予測：自動化と脱炭素の統合ソリューションが鍵となります。"
+    `注目の技術：${mostCommonCategory || 'IT'}への投資が集中しています。競合他社の動きに注目してください。`,
+    `地域トレンド：${latestItem.location || ' アジア太平洋'}周辺での新規プロジェクトが目立ちます。`
+    ,
+    "今後の予測：脱炭素化の加速に伴い、水素燃料や電気推進の港湾設備への統合ソリューションが鍵となります。"
   ];
   const hintsList = document.getElementById('hintsList');
-  hintsList.innerHTML = hints.map(h => `<li style="margin-bottom:10px;">${h}</li>`).join('');
+  hintsList.innerHTML = hints.map(h => `<li>${h}</li>`).join('');
 }
 
 function renderMap(data) {
   const map = L.map('map', { zoomControl: false }).setView([20, 120], 3);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-  data.forEach(d => {
-    if (d.lat && d.lng) {
-      L.circleMarker([d.lat, d.lng], { radius: 6, color: '#38bdf8', fillOpacity: 0.8 }).addTo(map)
-        .bindPopup(`<b>${d.title}</b>`);
+
+  data.forEach(rawItem => {
+    const d = mapDataToFields(rawItem);
+    const lat = d.lat;
+    const lng = d.lng;
+    
+    // 緯度経度が数値であり、NaNでないことを確認
+    if(typeof lat === 'number' && !isNaN(lat) && typeof lng === 'number' && !isNaN(lng)) {
+      L.circleMarker([lat, lng], {
+        radius: 8, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.6, weight: 1
+      }).addTo(map).bindPopup(`<b>${d.location || 'Location'}</b><br>${d.title || ''}`);
     }
   });
 }
 
 function renderChart(data) {
   const counts = {};
-  data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+  data.forEach(rawItem => {
+    const c = mapDataToFields(rawItem).category || 'Other';
+    counts[c] = (counts[c] || 0) + 1;
+  });
+
+  const chartData = {
+    labels: Object.keys(counts),
+    datasets: [{
+      data: Object.values(counts),
+      backgroundColor: '#38bdf8'
+    }]
+  };
+
   new Chart(document.getElementById('categoryChart'), {
     type: 'bar',
-    data: {
-      labels: Object.keys(counts),
-      datasets: [{ label: 'ニュース件数', data: Object.values(counts), backgroundColor: '#38bdf8' }]
-    },
+    data: chartData,
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false } // バーチャートの凡例は不要
+      },
       scales: {
-        y: { grid: { color: '#333' }, ticks: { color: '#999' } },
-        x: { grid: { display: false }, ticks: { color: '#999' } }
+        y: {
+          grid: { color: '#333' },
+          ticks: { color: '#999', precision: 0 }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#999' }
+        }
       }
     }
   });
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
